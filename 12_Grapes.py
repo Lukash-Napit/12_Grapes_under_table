@@ -12,17 +12,23 @@ pygame.display.set_caption("12 Grapes Wish Game 2026")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont("arial", 28)
 
-# Player Pac-Man
-player_x, player_y = 450, 320
+TABLE_TOP_HEIGHT = 120
+LEG_WIDTH = 40
+
+UNDER_X = 60
+UNDER_Y = TABLE_TOP_HEIGHT
+UNDER_W = WIDTH - 120
+UNDER_H = HEIGHT - TABLE_TOP_HEIGHT - 30
+
+player_x, player_y = WIDTH // 2, HEIGHT // 2
 player_speed = 5
 player_size = 25
 
-# Grapes (position + velocity)
 GRAPE_COUNT = 12
 grapes = []
 for _ in range(GRAPE_COUNT):
-    x = random.randint(60, WIDTH - 60)
-    y = random.randint(60, HEIGHT - 60)
+    x = random.randint(UNDER_X + 40, UNDER_X + UNDER_W - 40)
+    y = random.randint(UNDER_Y + 40, UNDER_Y + UNDER_H - 40)
     vx = random.uniform(-1.2, 1.2)
     vy = random.uniform(-1.2, 1.2)
     grapes.append({"x": x, "y": y, "vx": vx, "vy": vy})
@@ -36,7 +42,6 @@ months = [
 ]
 wishes = []
 
-# Wish input
 def get_wish_input(month):
     text = ""
     active = True
@@ -53,11 +58,17 @@ def get_wish_input(month):
                     if len(text) < 45:
                         text += event.unicode
 
-        screen.fill((15, 15, 25))
+        screen.fill((20, 20, 20))
+        draw_table()
+
+        pygame.draw.rect(screen, (15, 15, 25), (UNDER_X+30, UNDER_Y+80, UNDER_W-60, 120))
+        pygame.draw.rect(screen, (255, 255, 100), (UNDER_X+30, UNDER_Y+80, UNDER_W-60, 120), 2)
+
         label = font.render(f"Write your wish for {month}:", True, (255, 215, 0))
         typed = font.render(text, True, (200, 255, 200))
-        screen.blit(label, (50, 200))
-        screen.blit(typed, (50, 260))
+        screen.blit(label, (UNDER_X + 30, UNDER_Y + 40))
+        screen.blit(typed, (UNDER_X + 50, UNDER_Y + 130))
+
         pygame.display.flip()
         clock.tick(30)
 
@@ -67,17 +78,19 @@ def final_screen():
     running = True
     while running:
         screen.fill((20, 20, 35))
+        draw_table()
+
         title = font.render("Hope your wishes get fulfilled in 2026!", True, (255, 230, 0))
         screen.blit(title, (150, 40))
 
-        y = 120
+        y = TABLE_TOP_HEIGHT + 40
         for m, w in zip(months, wishes):
             line = font.render(f"{m}: {w}", True, (255, 255, 255))
-            screen.blit(line, (50, y))
+            screen.blit(line, (UNDER_X + 20, y))
             y += 30
 
         exit_msg = font.render("Press ESC to exit", True, (255, 150, 150))
-        screen.blit(exit_msg, (330, 580))
+        screen.blit(exit_msg, (330, HEIGHT - 40))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -87,7 +100,6 @@ def final_screen():
 
         pygame.display.flip()
         clock.tick(30)
-
 
 def save_wishes():
     with open("2026_WISHES_DECORATED.txt", "w", encoding="utf-8") as f:
@@ -101,23 +113,18 @@ def save_wishes():
         f.write("\n✨ May all your wishes come true in 2026! ✨\n")
         f.write("=============================================\n")
 
-
-# BOUNCING GRAPES LOGIC
 def update_grapes():
-    R = 14  # radius of grape
+    R = 14
 
-    # Move grapes
     for g in grapes:
         g["x"] += g["vx"]
         g["y"] += g["vy"]
 
-        # Bounce off walls
-        if g["x"] < R or g["x"] > WIDTH - R:
+        if g["x"] < UNDER_X + R or g["x"] > UNDER_X + UNDER_W - R:
             g["vx"] *= -1
-        if g["y"] < R or g["y"] > HEIGHT - R:
+        if g["y"] < UNDER_Y + R or g["y"] > UNDER_Y + UNDER_H - R:
             g["vy"] *= -1
 
-    # Bounce grapes off each other
     for i in range(len(grapes)):
         for j in range(i + 1, len(grapes)):
             g1 = grapes[i]
@@ -125,15 +132,20 @@ def update_grapes():
 
             dx = g1["x"] - g2["x"]
             dy = g1["y"] - g2["y"]
-            dist = math.sqrt(dx * dx + dy * dy)
+            dist = math.sqrt(dx*dx + dy*dy)
 
-            if dist < R * 2:  # collision
-                # Swap velocities (simple elastic collision)
+            if dist < R * 2:
                 g1["vx"], g2["vx"] = g2["vx"], g1["vx"]
                 g1["vy"], g2["vy"] = g2["vy"], g1["vy"]
 
+def draw_table():
 
-# GAME LOOP
+    pygame.draw.rect(screen, (120, 80, 40), (0, 0, WIDTH, TABLE_TOP_HEIGHT))
+
+    pygame.draw.rect(screen, (100, 60, 30), (0, TABLE_TOP_HEIGHT, LEG_WIDTH, HEIGHT))
+
+    pygame.draw.rect(screen, (100, 60, 30), (WIDTH - LEG_WIDTH, TABLE_TOP_HEIGHT, LEG_WIDTH, HEIGHT))
+
 running = True
 while running:
 
@@ -147,13 +159,11 @@ while running:
     if keys[pygame.K_UP]:    player_y -= player_speed
     if keys[pygame.K_DOWN]:  player_y += player_speed
 
-    player_x = max(20, min(player_x, WIDTH - 20))
-    player_y = max(20, min(player_y, HEIGHT - 20))
+    player_x = max(UNDER_X + 20, min(player_x, UNDER_X + UNDER_W - 20))
+    player_y = max(UNDER_Y + 20, min(player_y, UNDER_Y + UNDER_H - 20))
 
-    # Update moving grapes
     update_grapes()
 
-    # Check if Pac-Man eats a grape
     for g in grapes[:]:
         dx = player_x - g["x"]
         dy = player_y - g["y"]
@@ -165,31 +175,27 @@ while running:
             if len(wishes) == GRAPE_COUNT:
                 final_screen()
 
-    # Draw background
-    screen.fill((10, 10, 20))
+    screen.fill((20, 20, 20))
+    draw_table()
 
-    # Grape animation pulse
+    p, pulse_dir
     p += pulse_dir
     if p > 8 or p < 0:
         pulse_dir *= -1
 
-    # Draw floating/bouncing grapes
     for g in grapes:
         pygame.draw.circle(screen, (150, 0, 200), (int(g["x"]), int(g["y"])), 12 + p)
 
-    # Draw Pac-Man
     pygame.draw.circle(screen, (255, 255, 0), (player_x, player_y), player_size)
-
-    # Pac-Man mouth
     mouth = [
         (player_x, player_y),
         (player_x + 30, player_y - 10),
         (player_x + 30, player_y + 10)
     ]
-    pygame.draw.polygon(screen, (10, 10, 20), mouth)
+    pygame.draw.polygon(screen, (20, 20, 20), mouth)
 
     msg = font.render(f"Grapes left: {len(grapes)}", True, (255, 255, 255))
-    screen.blit(msg, (10, 10))
+    screen.blit(msg, (UNDER_X + 10, UNDER_Y + 10))
 
     pygame.display.flip()
     clock.tick(60)
