@@ -4,125 +4,153 @@ import sys
 
 pygame.init()
 
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 900, 650
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("12 Grapes Wish Game")
+pygame.display.set_caption("12 Grapes Wish Game 2026")
 
 clock = pygame.time.Clock()
-font = pygame.font.SysFont("arial", 24)
+font = pygame.font.SysFont("arial", 28)
 
-player_size = 30
-player = pygame.Rect(400, 300, player_size, player_size)
+player_x, player_y = 450, 320
 player_speed = 5
+player_size = 25
 
 GRAPE_COUNT = 12
 grapes = []
 for _ in range(GRAPE_COUNT):
-    x = random.randint(20, WIDTH - 40)
-    y = random.randint(20, HEIGHT - 40)
-    grapes.append(pygame.Rect(x, y, 20, 20))
+    x = random.randint(40, WIDTH - 40)
+    y = random.randint(40, HEIGHT - 40)
+    grapes.append([x, y])
 
+p = 0
+pulse_dir = 1
+
+months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+]
 wishes = []
 
-def get_wish_input(grape_number):
-    user_text = ""
-    input_active = True
+# Wish input screen
+def get_wish_input(month):
+    text = ""
+    active = True
 
-    while input_active:
+    while active:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    return user_text
+                    return text
                 elif event.key == pygame.K_BACKSPACE:
-                    user_text = user_text[:-1]
+                    text = text[:-1]
                 else:
-                    if len(user_text) < 40:
-                        user_text += event.unicode
+                    if len(text) < 45:
+                        text += event.unicode
 
-        screen.fill((30, 30, 30))
-        message = font.render(f"Enter Wish #{grape_number} and press ENTER:", True, (255, 255, 255))
-        text_surface = font.render(user_text, True, (200, 255, 200))
+        screen.fill((15, 15, 25))
+        label = font.render(f"Write your wish for {month}:", True, (255, 215, 0))
+        typed = font.render(text, True, (200, 255, 200))
 
-        screen.blit(message, (40, 200))
-        screen.blit(text_surface, (40, 260))
+        screen.blit(label, (50, 200))
+        screen.blit(typed, (50, 260))
 
         pygame.display.flip()
         clock.tick(30)
 
+def final_screen():
+    save_wishes()
 
-def show_final_screen():
     running = True
     while running:
-        screen.fill((10, 10, 20))
+        screen.fill((20, 20, 35))
 
-        title = font.render("Hope your wishes get fulfilled in 2026!", True, (255, 215, 0))
-        screen.blit(title, (180, 50))
+        title = font.render("Hope your wishes get fulfilled in 2026!", True, (255, 230, 0))
+        screen.blit(title, (150, 40))
 
-        y_offset = 120
-        for i, wish in enumerate(wishes, start=1):
-            line = font.render(f"{i}. {wish}", True, (255, 255, 255))
-            screen.blit(line, (50, y_offset))
-            y_offset += 30
+        y = 120
+        for m, w in zip(months, wishes):
+            line = font.render(f"{m}: {w}", True, (255, 255, 255))
+            screen.blit(line, (50, y))
+            y += 30
 
-        exit_text = font.render("Press ESC to exit", True, (255, 150, 150))
-        screen.blit(exit_text, (280, 520))
+        exit_msg = font.render("Press ESC to exit", True, (255, 150, 150))
+        screen.blit(exit_msg, (330, 580))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                pygame.quit(); sys.exit()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                running = False
+                pygame.quit(); sys.exit()
 
         pygame.display.flip()
-    pygame.quit()
-    sys.exit()
+        clock.tick(30)
+
+def save_wishes():
+    with open("2026_WISHES.txt", "w", encoding="utf-8") as f:
+        f.write("=============================================\n")
+        f.write("        🎉 12 Grapes Wish List for 2026 🎉\n")
+        f.write("=============================================\n\n")
+
+        for m, w in zip(months, wishes):
+            f.write(f"🌙 {m}\n")
+            f.write(f"   ➤ Wish: {w}\n")
+            f.write("---------------------------------------------\n")
+
+        f.write("\n✨ May all your wishes come true in 2026! ✨\n")
+        f.write("=============================================\n")
 
 running = True
 while running:
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            pygame.quit(); sys.exit()
 
     keys = pygame.key.get_pressed()
 
+    if keys[pygame.K_LEFT]:  player_x -= player_speed
+    if keys[pygame.K_RIGHT]: player_x += player_speed
+    if keys[pygame.K_UP]:    player_y -= player_speed
+    if keys[pygame.K_DOWN]:  player_y += player_speed
 
-    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-        player.x -= player_speed
-    if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-        player.x += player_speed
-    if keys[pygame.K_UP] or keys[pygame.K_w]:
-        player.y -= player_speed
-    if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-        player.y += player_speed
-
-    player.x = max(0, min(player.x, WIDTH - player_size))
-    player.y = max(0, min(player.y, HEIGHT - player_size))
+    player_x = max(20, min(player_x, WIDTH - 20))
+    player_y = max(20, min(player_y, HEIGHT - 20))
 
     for grape in grapes[:]:
-        if player.colliderect(grape):
+        gx, gy = grape
+        distance = ((player_x - gx) ** 2 + (player_y - gy) ** 2) ** 0.5
+
+        if distance < 35:  # eat grape
             grapes.remove(grape)
-            wish = get_wish_input(len(wishes) + 1)
+            wish = get_wish_input(months[len(wishes)])
             wishes.append(wish)
 
             if len(wishes) == GRAPE_COUNT:
-                show_final_screen()
+                final_screen()
 
-    screen.fill((0, 0, 20))
+    screen.fill((10, 10, 20))
 
-    pygame.draw.circle(screen, (255, 255, 0), player.center, player_size // 2)
+    p += pulse_dir
+    if p > 8 or p < 0:
+        pulse_dir *= -1
 
+    for gx, gy in grapes:
+        pygame.draw.circle(screen, (150, 0, 200), (gx, gy), 12 + p)
 
-    for grape in grapes:
-        pygame.draw.circle(screen, (160, 32, 240), grape.center, 10)
+    pygame.draw.circle(screen, (255, 255, 0), (player_x, player_y), player_size)
 
-    info = font.render(f"Grapes left: {len(grapes)}", True, (255, 255, 255))
-    screen.blit(info, (10, 10))
+    mouth_polygon = [
+        (player_x, player_y),
+        (player_x + 30, player_y - 10),
+        (player_x + 30, player_y + 10)
+    ]
+    pygame.draw.polygon(screen, (10, 10, 20), mouth_polygon)
+
+    msg = font.render(f"Grapes left: {len(grapes)}", True, (255, 255, 255))
+    screen.blit(msg, (10, 10))
 
     pygame.display.flip()
     clock.tick(60)
-
-pygame.quit()
