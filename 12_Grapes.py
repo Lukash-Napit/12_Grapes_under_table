@@ -101,8 +101,9 @@ def final_screen():
         pygame.display.flip()
         clock.tick(30)
 
+
 def save_wishes():
-    with open("2026_WISHES_DECORATED.txt", "w", encoding="utf-8") as f:
+    with open("2026_WISHES.txt", "w", encoding="utf-8") as f:
         f.write("=============================================\n")
         f.write("        🎉 12 Grapes Wish List for 2026 🎉\n")
         f.write("=============================================\n\n")
@@ -139,12 +140,16 @@ def update_grapes():
                 g1["vy"], g2["vy"] = g2["vy"], g1["vy"]
 
 def draw_table():
-
+    
     pygame.draw.rect(screen, (120, 80, 40), (0, 0, WIDTH, TABLE_TOP_HEIGHT))
 
-    pygame.draw.rect(screen, (100, 60, 30), (0, TABLE_TOP_HEIGHT, LEG_WIDTH, HEIGHT))
+    pygame.draw.rect(screen, (100, 60, 30), (0, TABLE_TOP_HEIGHT, LEG_WIDTH-15, HEIGHT))
 
     pygame.draw.rect(screen, (100, 60, 30), (WIDTH - LEG_WIDTH, TABLE_TOP_HEIGHT, LEG_WIDTH, HEIGHT))
+
+    pygame.draw.line(screen, (80, 40, 10), (LEG_WIDTH+10, TABLE_TOP_HEIGHT), (LEG_WIDTH+10,HEIGHT-40 ), 15)
+
+    pygame.draw.line(screen, (80, 40, 10), (WIDTH - LEG_WIDTH-LEG_WIDTH-10,TABLE_TOP_HEIGHT ), (600, HEIGHT-40), 15)
 
 running = True
 while running:
