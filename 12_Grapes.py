@@ -149,7 +149,7 @@ def draw_table():
 
     pygame.draw.line(screen, (80, 40, 10), (LEG_WIDTH+10, TABLE_TOP_HEIGHT), (LEG_WIDTH+10,HEIGHT-40 ), 15)
 
-    pygame.draw.line(screen, (80, 40, 10), (WIDTH - LEG_WIDTH-LEG_WIDTH-10,TABLE_TOP_HEIGHT ), (600, HEIGHT-40), 15)
+    pygame.draw.line(screen, (80, 40, 10), (WIDTH - LEG_WIDTH-LEG_WIDTH-10,TABLE_TOP_HEIGHT), (WIDTH - LEG_WIDTH-LEG_WIDTH-10, HEIGHT-40), 15)
 
 running = True
 while running:
@@ -204,3 +204,4 @@ while running:
 
     pygame.display.flip()
     clock.tick(60)
+
